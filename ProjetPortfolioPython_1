@@ -1,0 +1,76 @@
+import pandas as pd
+import numpy as np
+
+df = pd.read_csv('C:/Users/PEGUIN/Desktop/PORTFOLIOPYTHON/Dataframeportfolio1.csv', on_bad_lines='skip')
+
+##### Projet 1: Réalisation d'une opération de pre-processing sur un dataframe de taille moyenne (sans chunking) #####
+
+
+## Partie 1: Sélection des catégories et examen du dataframe
+
+# Sélection des catégories qui nous intéressent
+df = df[['Order ID','Order Date','Sales','Profit','Quantity']]
+    
+# Connaître le nombre de valeurs nulles par colonnes
+df.info()
+
+# Connaître le nombre de doublons
+print(len(df) - len(df.drop_duplicates()), 'doublon')
+
+# Connaître les types des colonnes
+print(df.dtypes)
+
+
+
+
+## Partie 2: Choix des actions à éffectuer
+
+# Remplacement des valeurs nulles:
+#Option 1: Remplacer les valeurs manquantes d'une colonne par la moyenne
+df['Sales'].replace( np.NaN, df ['Sales'].mean())
+#Option 2: Supprimer les lignes avec des données absentes
+df.dropna(axis=0, how='any', inplace=True)
+
+
+# Supression des doublons:
+df.drop_duplicates(keep='last')
+
+
+# Vérifier qu'il n'y est pas des valeurs avec des types mixés
+print(df.dtypes)
+#Action: Assigner le même type à toute les valeurs de la colonne
+df['Order ID'] = df['Order ID'].astype(object)
+
+
+# Enregistrement du data frame à la fin de l'opération:
+df.to_csv('C:/Users/PEGUIN/Desktop/PORTFOLIOPYTHON/Dataframeportfolio1.csv')
+
+
+
+
+
+##### Projet 2: Réalisation d'une opération de pre-processing basique sur un large dataframe (avec chunking) #####
+
+df = pd.read_csv('C:/Users/PEGUIN/Desktop/PORTFOLIOPYTHON/Dataframeportfolio1.csv', on_bad_lines='skip')
+df_chunk = pd.read_csv("C:/Users/PEGUIN/Desktop/PORTFOLIOPYTHON/Dataframeportfolio1.csv", sep='\t', chunksize=21500)
+chunk_list = []
+
+
+for chunk in df_chunk:  
+    # Sélection des catégories qui nous intéressent
+    chunk_filter = chunk[['product_name', 'sugars_100g', 'saturated-fat_100g']]
+    
+    # Suppression des lignes avec des données absentes:
+    chunk_filter.dropna(axis=0, how='any', inplace=True)
+
+    # Supression des doublons
+    df.drop_duplicates(keep='last')
+
+    # Ajoute les chunk a une liste
+    chunk_list.append(chunk_filter)
+
+# Réunir une liste de chunks en un seul chunk
+df_concat = pd.concat(chunk_list)
+
+# Enregistrement du data frame à la fin de l'opération:
+df_concat.to_csv('C:/Users/PEGUIN/Desktop/PORTFOLIOPYTHON/Dataframeportfolio1.csv')
